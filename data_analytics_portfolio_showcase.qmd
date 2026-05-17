@@ -1,0 +1,91 @@
+---
+title: "Data Analytics Portfolio Showcase"
+author: "Gilbert Morgan"
+format:
+  html:
+    toc: true
+    code-fold: true
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+# Data Analytics Portfolio Showcase
+
+This Quarto document demonstrates reproducible data analysis skills using R, including data cleaning, exploratory analysis, summary statistics, visualization, and interpretation.
+
+## Skills Demonstrated
+
+- R programming
+- Quarto reporting
+- Data cleaning and preparation
+- Exploratory data analysis
+- Summary statistics
+- Data visualization
+- Grouped analysis
+- Reproducible research documentation
+
+## Load Packages
+
+```{r}
+library(tidyverse)
+```
+
+## Create Sample Dataset
+
+```{r}
+analytics_data <- tibble(
+  project_area = c(
+    "Healthcare Analytics",
+    "Machine Learning",
+    "SQL Databases",
+    "Natural Language Processing",
+    "Data Visualization",
+    "Statistical Modeling"
+  ),
+  projects_completed = c(4, 5, 6, 4, 7, 5),
+  skill_score = c(88, 91, 86, 84, 90, 89)
+)
+
+analytics_data
+```
+
+## Summary Statistics
+
+```{r}
+analytics_data |>
+  summarise(
+    total_projects = sum(projects_completed),
+    average_skill_score = mean(skill_score),
+    highest_skill_score = max(skill_score),
+    lowest_skill_score = min(skill_score)
+  )
+```
+
+## Project Area Ranking
+
+```{r}
+analytics_data |>
+  arrange(desc(skill_score))
+```
+
+## Data Visualization
+
+```{r}
+ggplot(analytics_data, aes(x = reorder(project_area, skill_score), y = skill_score)) +
+  geom_col() +
+  coord_flip() +
+  labs(
+    title = "Analytics Skill Areas",
+    x = "Project Area",
+    y = "Skill Score"
+  ) +
+  theme_minimal()
+```
+
+## Interpretation
+
+This report highlights applied data analytics skills across multiple technical areas. The workflow demonstrates how R and Quarto can be used to combine code, output, visualization, and written interpretation in one reproducible document.
+
+The analysis reflects a professional reporting workflow that can be expanded for coursework, portfolio projects, healthcare analytics, SQL-based data projects, machine learning documentation, or statistical analysis.
