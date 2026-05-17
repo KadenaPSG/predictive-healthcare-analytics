@@ -1,0 +1,763 @@
+---
+title: "Descriptive_Data"
+author: "I.Tsapara"
+date: "2025-04-28"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Already complete Code
+
+As we move on from week to week and task to task, the code that you have already completed, will stay on the template but will not run, this is possible by adding eval=FALSE to the corresponding code chunk.
+Note that the libraries need to be linked to this program as well.
+
+
+```{r install}
+
+# Install and load necessary libraries
+#install.packages("ggplot2") # Install ggplot2 for plotting, if you have already installed the packages, comment this out by enterring a # in front of this command
+#install.packages("scales")  # Install scales for formatting
+#install.packages("moments") # Install moments for skewness and kurtosis
+library(ggplot2)            # Load ggplot2 library
+library(scales)             # Load scales library
+library(moments)
+
+```
+
+
+## Setting up your directory in your computer.
+
+This needs to be addressed here.
+
+
+
+```{r Dir}
+# Check the current working directory
+getwd()
+
+# in the next line, change the directory to the place where you saved the
+# data file, if you prefer you can save your data.csv file in the directory
+# that command 7 indicated.
+# for example your next line should like something similar to this: setwd("C:/Users/Eddie/Documents")
+
+# Set the working directory to where the data file is located
+# This ensures the program can access the file correctly
+
+setwd("C:/Users/Eddie/Downloads")
+
+### Choose an already existing directory in your computer.
+```
+
+## Setting up your personalized data
+
+```{r Read, eval=FALSE}
+# Read the CSV file
+# The header parameter ensures column names are correctly read
+# sep defines the delimiter (comma in this case)
+# stringsAsFactors prevents automatic conversion of strings to factors
+df <- read.csv("data.csv", header = TRUE, sep = ",", stringsAsFactors = TRUE)
+
+##########################################################
+# Define variables A and B based on your student ID
+# A represents the first 3 digits, B represents the last 3 digits
+# ID Number is 
+A <- 6
+B <- 321
+Randomizer <- A + B # Randomizer ensures a consistent seed value for reproducibility
+
+
+# Generate a random sample of 500 rows from the dataset
+set.seed(Randomizer) # Set the seed for reproducibility
+sample_size <- 500
+df <- df[sample(nrow(df), sample_size, replace = TRUE), ] # Sample the dataset
+
+write.csv(df, file = "my_data.csv", row.names = FALSE) # this command may take some time to run once it is done, it will create the desired data file locally in your directory
+
+
+```
+
+
+## Knit your file
+
+As practice, you may want now to knit your file in an html. To do this, you should click on the knit button on the top panel, and wait for the rendering file. The HTML will open once it is done for you to review.
+
+It is recommended to practice with RMD and download and review the following cheatsheets: https://rmarkdown.rstudio.com/lesson-15.HTML
+
+In addition, you may want to alter some of the editor components and re-knit your file to gain some knowledge and understanding of RMD.
+For a complete tutorial, visit: https://rmarkdown.rstudio.com/lesson-2.html
+
+
+```{r ReadYourFile}
+
+df <- read.csv("my_data.csv", header = TRUE, sep = ",", stringsAsFactors = TRUE)
+```
+
+
+## Cleaning up your data
+
+
+***Step 0. Now that you read  the file, you want to learn few information about your data***
+
+The following commands will not be explained here, do your research, review your csv file and answer the questions related with this part of your code.
+
+
+```{r Explore}
+
+# Basic exploratory commands
+nrow(df)       # Number of rows in the dataset
+length(df)     # Number of columns (or variables) in the dataset
+str(df)        # Structure of the dataset (data types and a preview)
+summary(df)    # Summary statistics for each column
+
+```
+
+
+## Your Turn
+
+Please answer the following questions, by typing information after the question.
+
+***Question 1***
+
+**What type of variables does your file include?**
+
+***Answer 1:***
+
+The dataset includes both categorical (qualitative) and numeric (quantitative) variables.
+
+***Question 2***
+
+**Specific data types?**
+
+***Answer 2:***
+
+The dataset includes two main data types: integer (int) and factor.
+
+
+***Question 3***
+
+**Are they read properly?**
+
+***Answer 3:***
+
+Not completely. The dataset does load into R, but some of the variables don’t seem to be read correctly.
+
+For instance, a few variables look misaligned or mislabeled. The Weight variable includes values like “Bachelor’s” and “High School,” which clearly belong to education. Then Education looks like it contains income values, Income shows marital status categories, and MaritalStatus reflects employment categories.
+
+This suggests that the columns may have shifted during import, likely due to an issue with how the CSV file is structured. There are also missing values (NAs) and some empty factor levels that should be addressed.
+
+Overall, the data is there, but it’s not fully clean or correctly structured yet, so it will need some cleaning before moving forward with analysis.
+
+***Question 4***
+
+**Are there any issues ?**
+
+***Answer 4:***
+
+Yes, there are a few issues with the dataset.
+
+First, some variables appear to be misaligned or incorrectly labeled. For example, Weight contains education categories, Education contains income values, and other variables seem shifted as well. This suggests a problem with how the data was imported or structured in the original CSV file.
+
+Second, there are missing values (NAs) in variables like Gender, Age, and Height, which could affect analysis if not handled properly.
+
+Third, there are empty or unclear factor levels (e.g., blank entries), which may represent missing or improperly recorded data.
+
+Overall, the dataset has structural and data quality issues that need to be addressed before conducting any meaningful analysis.
+
+***Question 5***
+
+**Does your file includes both NAs and blanks?**
+
+***Answer 5:***
+
+Yes
+
+***Question 6***
+
+**How many NAs do you have and **
+
+***Answer 6:***
+
+Gender: 43
+Age: 26
+Height: 42
+Weight: 1
+Employment: 4
+Happiness: 6
+
+total = 122
+
+***Question 7***
+
+**How many blanks? **
+
+***Answer 7:***
+
+252
+
+
+## Cleanup Continued
+
+***Step 1:  Handling both blanks and NAs is not simple so first we want to eliminate some of those, let's eliminate the blanks and change them to NAs***
+
+
+```{r Cleanup}
+
+
+#
+# Step 1:  # Handling both blanks and NAs is not simple so first we want to eliminate
+# some of those, let's eliminate the blanks and change them to NAs
+#
+
+
+# Replace blanks with NAs across the dataset
+# This ensures that blank values are consistently treated as missing data
+df[df == ""] <- NA
+
+# Convert specific columns to factors
+# This step ensures categorical variables are treated correctly after replacing blanks
+factor_columns <- c("ID", "Weight", "Education", "Income", "MaritalStatus",
+                    "Employment", "Score", "Category", "Color", "Hobby",
+                    "Happiness", "Location")
+
+df[factor_columns] <- lapply(df[factor_columns], function(col) as.factor(as.character(col)))
+
+```
+
+
+## Cleanup Continued
+
+***Step 2: Count NAs in the entire dataset***
+
+
+```{r CheackNAs}
+
+
+#
+# Step 2: Count NAs in the entire dataset
+
+
+# Count the total number of NAs in the dataset
+total_nas <- sum(is.na(df))
+total_nas # Print the total number of missing values
+
+```
+
+## Your Turn
+
+Please answer the following questions, by typing information after the question.
+
+***Question 8***
+
+**Explain what the printed number is, what is the information that relays and how can you use it in your analysis?**
+
+***Answer 8:***
+
+The printed number (374) represents the total number of missing values (NAs) in the dataset after replacing all blank entries with NA. This means it includes both the original missing values and the blanks that were converted during the data cleaning step.
+
+This information tells us how much data is missing overall and gives a sense of the data quality. A higher number of missing values may impact the reliability of the analysis and may require additional steps such as removing missing observations or applying imputation methods.
+
+In terms of analysis, this value helps guide decisions on how to handle missing data. For example, we can decide whether to exclude variables or observations with too many missing values, or apply appropriate methods to account for missingness before running statistical analyses.
+
+
+
+## Clean Up Continued
+
+***Step 3: Count rows with NAs.***
+
+
+```{r NARows }
+
+#
+# Step 3: Count rows with NAs
+#
+
+# Count rows with at least one NA
+rows_with_nas <- sum(rowSums(is.na(df)) > 0)
+Percent_row_NA <- percent(rows_with_nas / nrow(df)) # Percentage of rows with NAs
+rows_with_nas
+Percent_row_NA
+
+```
+
+## Your Turn
+
+***Question 9***
+
+**How large is the proportion of the rows with NAs, we can drop up to 5%?**
+
+***Answer 9:***
+
+The proportion of rows with missing values is 54% (268 out of 500 rows).
+
+Since we can only drop up to 5% of the data, this proportion is much too high to simply remove those rows. Dropping 54% of the dataset would result in a significant loss of information and could bias the analysis.
+
+Therefore, instead of removing rows with missing values, we should consider other approaches such as handling missing data through imputation or focusing on variables with fewer missing values.
+
+***Question 10***
+
+**Do you think that would be wise to drop the above percent? **
+
+***Answer 10:***
+
+No, it would not be wise to drop that percentage of the data.
+
+Since 54% of the rows contain missing values, removing them would mean losing more than half of the dataset. This would significantly reduce the sample size and could introduce bias into the analysis, making the results less reliable.
+
+Instead, it would be more appropriate to handle the missing data using other methods, such as imputation or analyzing variables with fewer missing values, rather than dropping such a large portion of the data.
+
+***Question 11***
+
+**How this will affect your dataset? **
+
+***Answer 11:***
+
+Dropping this percentage of the data would have a major impact on the dataset.
+
+Since 54% of the rows contain missing values, removing them would reduce the dataset from 500 observations to about 232, which is a significant loss of information. This reduction in sample size would decrease the statistical power of the analysis and make the results less stable.
+
+It could also introduce bias, especially if the missing data is not random, meaning the remaining data may no longer be representative of the original population. Overall, this would weaken the validity and reliability of any conclusions drawn from the analysis.
+
+
+## CleanUp Continued
+
+***Step 4: Count columns with NAs***
+
+
+```{r NAColumns}
+
+
+
+#  
+# Step 4: Count columns with NAs
+
+# Count columns with at least one NA
+cols_with_nas <- sum(colSums(is.na(df)) > 0)
+Percent_col_NA <- percent(cols_with_nas / length(df)) # Percentage of columns with NAs
+cols_with_nas
+Percent_col_NA
+
+```
+
+## Your Turn
+
+***Question 12***
+
+**How large is the proportion of the cols with NAs, we never want to drop entire columnes as this would mean that we will loose variables and associations but do you think that would be wise to drop the above percent?**
+
+***Answer 12:***
+
+The proportion of columns with missing values is 100% (15 out of 15 columns).
+
+It would not be wise to drop this percentage of columns. Since all variables contain at least some missing data, removing them would mean losing the entire dataset and all potential relationships between variables.
+
+Even though we generally avoid dropping columns, in this case it is especially not appropriate because the missingness is spread across all variables rather than concentrated in a few. Instead, the better approach is to handle the missing data within each variable so we can retain the variables and preserve the relationships needed for analysis.
+
+***Question 13***
+
+**How this will affect your dataset? **
+
+***Answer 13:***
+
+Dropping this percentage of columns would completely compromise the dataset.
+
+Since 100% of the columns contain missing values, removing them would mean losing all variables, leaving no data available for analysis. This would eliminate any ability to examine relationships, trends, or patterns in the dataset.
+
+It would also remove all meaningful information and make it impossible to conduct any statistical analysis. Overall, this would make the dataset unusable, so handling missing data within variables is the better approach.
+
+
+
+## Imputation
+
+***Step 5: Replace NAs with appropriate values (mean for numeric and integer,mode for factor, "NA" for character)***
+
+In later weeks we will learn how to replace the NAs properly based on the descriptive statistics and you will discuss this code.For now, you can assume that by setting the mean of the variable for numeric and mode for categorical it is correct - this is not always the case of course but the code will become much more complicated in that case.
+
+
+```{r Imputation}
+
+
+# 
+# Step 5: Replace NAs with appropriate values (mean for numeric and integer,
+# mode for factor, "NA" for character)
+# In later weeks we will learn how to replace the NAs properly based on the
+# descriptive statistics and you will discuss this code.
+# for now, you can assume that by setting the mean of the variable for numeric
+# and mode for categorical it is correct - this is not always the case of course
+# but the code will become much more complicated in that case.
+
+
+# Replace NAs with appropriate values
+# Numeric: Replace with the mean if sufficient data is available
+# Categorical: Replace with the mode (most common value)
+# Character: Replace with the string "NA"
+df <- lapply(df, function(col) {
+  if (is.numeric(col) || is.integer(col)) { # Numeric or integer columns
+    if (sum(!is.na(col)) > 10) {
+      col[is.na(col)] <- mean(col, na.rm = TRUE) # Replace with mean
+    } else {
+      col[is.na(col)] <- approx(seq_along(col), col, n = length(col))[["y"]][is.na(col)] # Interpolation
+    }
+  } else if (is.factor(col)) { # Factor columns
+    mode_val <- names(sort(-table(col)))[1] # Mode (most common value)
+    col[is.na(col)] <- mode_val
+  } else if (is.character(col)) { # Character columns
+    col[is.na(col)] <- "NA" # Replace with "NA"
+  }
+  return(col) # Return the modified column
+})
+
+df <- as.data.frame(df) # Convert the list back to a dataframe
+
+
+#
+# following the above method to impute, has now changed some of the statistics
+
+
+# Check the updated dataset and ensure no remaining NAs
+summary(df)
+
+```
+
+
+## Your Turn
+
+**Essay Question**
+
+Run summary(df) and compare with the previous statistics. Do you observe any undesired changes? Explain in detail. Are there any more NA's in your file?What is the information that is printed by the summary? How can this be interpreted? what are your observations? Verify the effects of imputation, and explain in detail. Compare the updated summary with the earlier statistics and note changes. Explain everything that you obsevrve.
+
+**Answer**
+
+After running summary(df) following the imputation step, there are noticeable changes in the dataset. First, there are no remaining NAs, which confirms that the imputation process successfully replaced all missing values. This improves completeness, but it also means that the dataset has been artificially altered, so results should be interpreted with caution.
+
+One clear change is in the numeric variables (Age and Height). The mean, median, and quartiles now appear more centered and consistent, which suggests that replacing missing values with the mean has reduced variability. While this makes the data more stable, it can also underestimate true variability and slightly distort the distribution.
+
+For the categorical (factor) variables, missing values were replaced with the mode (most frequent category). This has increased the counts of already common categories (e.g., certain education levels or employment statuses), which can inflate dominant groups and potentially bias results toward those categories. As a result, the distribution of categories may no longer fully reflect the original data.
+
+The summary output itself provides descriptive statistics: for numeric variables, it shows measures like minimum, quartiles, median, mean, and maximum; for categorical variables, it shows frequency counts for each level. Comparing this updated summary to the earlier one, the key observation is that while the dataset is now complete and easier to work with, the imputation has smoothed the data and altered distributions, which is an important limitation to keep in mind for further analysis.
+
+## Descriptive Statistics
+  
+***Step 6: Create descriptive statistics for all variables***
+
+We run all the descriptive statistics for all the numeric variables
+ 
+```{r}
+################################################################### 
+# 
+# Step 6: Create descriptive statistics for all variables
+# We run all the descriptive statistics for all the numeric variables
+#
+###################################################################
+# Initialize a function to compute descriptive statistics
+compute_stats <- function(column, name) {
+  if (is.numeric(column) || is.integer(column)) {
+    data.frame(
+      Variable = name,
+      Mean = round(mean(column, na.rm = TRUE), 2),
+      Median = round(median(column, na.rm = TRUE), 2),
+      St.Deviation = round(sd(column, na.rm = TRUE), 2),
+      Range = round(diff(range(column, na.rm = TRUE)), 2),
+      IQR = round(IQR(column, na.rm = TRUE), 2),
+      Skewness = round(skewness(column, na.rm = TRUE), 2),
+      Kurtosis = round(kurtosis(column, na.rm = TRUE), 2),
+      stringsAsFactors = FALSE
+    )
+  } else {
+    NULL
+  }
+}
+
+# Apply the function to each numeric or integer column in the dataset
+descriptive_stats <- do.call(
+  rbind,
+  lapply(names(df), function(col) compute_stats(df[[col]], col))
+)
+
+# Print the descriptive statistics dataframe
+descriptive_stats
+
+```
+ 
+
+## Descriptive Statistics Continued
+
+***Step 7: Print Descriptive Statistics***
+
+Now you have all the descriptive statistics for all numeric variables  Create a professional table in your paper. The library(KableExtra), can help you create the table here. If you have no programming experience you can cut and paste in Excel and beautify the table in Excel.
+
+```{r}
+
+#############################################################
+# 
+# Step 7: Print Descriptive Statistics
+# Now you have all the descriptive statistics for all numeric variables
+# Create a professional table in your paper.
+# the library(KableExtra), can help you create the table here.
+# if you have no programming experience you can cut and paste in Excel
+# and beautify the table in Excel
+#############################################################
+  
+  print("Descriptive Statistics:")
+  print(descriptive_stats)
+  
+
+```
+
+## Your Turn
+
+**Essay Question**
+
+Review and compare with the previous statistics. Do you observe any undesired changes? Explain in detail. How can this be interpreted? what are your observations? Verify the descriptive statistics, and explain in detail. Explain everything that you obsevrve. Complete your research compare your variables and complete your paper
+
+**Answer**
+The descriptive statistics summarize the numeric variables (Gender, Age, and Height) by showing measures like mean, median, standard deviation, range, IQR, skewness, and kurtosis. Overall, the mean and median for Age and Height are very close, which suggests the data is fairly symmetric after imputation.
+
+One undesired change is that replacing missing values with the mean makes the data look more centered and less variable than it may have originally been. This can slightly reduce variability and make the distributions appear more normal than they actually are.
+
+From the results, Age and Height show reasonable spread and low skewness, indicating fairly balanced distributions. However, Gender should be interpreted carefully since it is coded numerically and not truly continuous.
+
+Overall, the statistics are consistent and easier to interpret after cleaning, but they should be viewed with caution because imputation may have altered the original data distribution.
+## Visual Representations
+
+***Step 8: Create graphs using ggplot2 ***
+
+For this part there are parts that you will need to change to create your graphs. The example is set to work with Income. Make the necessary changes to create the rest of the graphs. You may also want to change the colors, the dimensions etc...
+
+```{r}
+
+
+  #######################################################################
+  # 
+  # Step 8: Create graphs using ggplot2
+  # For this part there are parts that you will need to change to create 
+  # your graphs.
+  # The example is set to work with Income
+  # Make the necessary changes to create the rest of the graphs
+  # You may also want to change the colors, the dimensions etc...
+  #############################################################
+  
+  #############################################################
+  #
+  # STEP 8a: Create a bargraph or a histogram
+  # Explain what graph was that and why?
+  # Set col to the desired column name
+  #############################################################
+  #
+  ##
+  # In this code we start you of with an example of Happiness, later in the code
+  # you should replace this with your desired variable.
+  #
+  
+    col = "Happiness"  # This is an example, try to do the same with a different variable
+
+```
+
+
+## Bargraph - if the variable of your choice is categorical
+
+```{r Bargraph, eval = FALSE}  
+  # Assume df is your dataframe and col is the column name (as string)
+if (is.factor(df[[col]])) {
+  # Bar graph for factors
+  ggplot(df, aes(x = .data[[col]], fill = .data[[col]])) +
+    geom_bar() +
+    labs(title = paste("Bar Graph for", col), x = col, y = "Count") +
+    theme_minimal() +
+    theme(legend.position = "right")
+  
+} 
+```
+
+
+## Histogram - If the varaibles of your choice is Numerical
+
+You can also copy the chunk and create more graphs by resetting the col variable appropriately
+
+
+```{r}
+if (is.numeric(df[[col]]) || is.integer(df[[col]])) {
+  # Histogram for numeric variables
+  ggplot(df, aes(x = .data[[col]])) +
+    geom_histogram(bins = 30, fill = "steelblue", color = "black") +
+    labs(title = paste("Histogram for", col), x = col, y = "Frequency") +
+    theme_minimal()
+}
+```
+
+## Your Turn
+
+**Essay Question**
+
+Now that you can observe graphically your data, explain the importance of graphical representations and how this helps to communicate data with other parties.
+Explain what graph was that and why? 
+
+**Answer**
+Graphical representations are important because they make it easier to quickly understand patterns, trends, and distributions in the data. Instead of looking at numbers, graphs help communicate key insights clearly to others, even those without a technical background.
+
+The graph shown is a histogram, which is used for numeric variables like Height. It displays how the values are distributed across different ranges, allowing us to see the spread, central tendency, and any potential skewness.
+
+This is useful because it helps identify patterns such as clustering or variability in the data, making it easier to interpret and explain findings in a more visual and accessible way.  
+
+## Your Turn
+
+***STEP 8b: Create a boxplot and a Histogram for numeric variables note the the Bin width cannot be set up in the same way to work with Age or Happiness that has a small range and Income that the range is in thousands. Change this appropriately***
+
+Please note that this part of the code will not run for the demo code. You will need to change the value of eval=FALSE to eval=TRUE, after you introduce your code, to run it and add it to your knitted file.
+
+```{r YourTurn, eval=TRUE}
+ #############################################################
+      #
+      # STEP 8b: Create a boxplot  and Histogram for numeric variables
+      # note the the Bin width cannot be set up in the same way to work with 
+      # Age or Happiness that has a small range and Income that the range is in thousands
+      # Change this appropriately
+      #############################################################
+      #
+      # Choose a numeric variable (i.e., Age) set the col variable to the name of the column then you rerun the code that is commented out here.
+
+col = "Age"   # choose numeric variable (Age or Height)
+
+if (is.numeric(df[[col]]) || is.integer(df[[col]])) {
+  
+  # Histogram
+  ggplot(df, aes(x = .data[[col]])) +
+    geom_histogram(binwidth = 2, fill = "steelblue", color = "black") +
+    labs(title = paste("Histogram for", col), x = col, y = "Count") +
+    theme_minimal()
+  
+  # Boxplot
+  ggplot(df, aes(y = .data[[col]])) +
+    geom_boxplot(fill = "orange") +
+    labs(title = paste("Boxplot for", col), y = col) +
+    theme_minimal()
+}
+```
+
+## Your Turn
+
+**Essay Question**
+
+Now explain this graph. Focus on the information extracted, anomalies, outliers, relationships.
+
+**Answer**
+The boxplot shows the distribution of Age, with a median around 172–173, indicating the central value of the data. The interquartile range (IQR) suggests that most values fall between approximately 165 and 180, showing a moderate spread.
+
+There are no clear outliers visible, which indicates the data is fairly consistent without extreme values. The whiskers extend to the minimum and maximum values, showing the full range of the data.
+
+Overall, the distribution appears fairly symmetrical, with no strong skewness, suggesting that the values are evenly distributed around the center.
+## Your Turn
+
+***Step 8c: NOTE that you should run this part with the latest value of col. Do not forget to change the eval=TRUE to knit it.
+      
+**Boxplot for numeric variables**
+
+
+```{r boxplot, eval=TRUE}
+       #############################################################
+       #
+       # Step 8c
+       # NOTE that you should run this part of the code after you 
+       #  copy the graph that the previous code creates. Boxplot for numeric variables
+       #############################################################
+      # The next 5 lines will run only if the col is numeric, otherwise will give you an error.
+      
+col = "Age"   
+       ggplot(df, aes(x = "", y = .data[[col]])) +
+  geom_boxplot(fill = "skyblue", color = "darkblue", width = 0.3, outlier.color = "red", outlier.size = 2) +
+  labs(
+    title = paste("Box Plot for", col),
+    x = NULL,
+    y = "Value"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    plot.title = element_text(hjust = 0.5, size = 16, face = "bold"),
+    axis.title.y = element_text(size = 14),
+    axis.text.y = element_text(size = 12)
+  )
+```
+
+## Your Turn
+
+**Essay Question**
+
+Explain the findings of your Boxplot. Are there any outliers? What is the IQR? Focus on the information extracted, anomalies, outliers, relationships.
+
+**Answer**
+The boxplot shows that Age is fairly evenly distributed, with a median around 172–173. The IQR ranges roughly from 165 to 180, indicating where most of the data is concentrated.
+
+There are no visible outliers, suggesting the data does not contain extreme values. The distribution appears fairly symmetrical, with no major anomalies.
+
+Overall, the data is consistent with a moderate spread and no unusual patterns.
+
+## Tabular Representations
+
+***Step 9: Tables***
+
+Creating tables to understand how the different categorical variables interconnect. Tabular information can be provided in both tables and parallel barplots. The following is an example on two variables, choose two others to get more valuable insights.
+
+```{r Tabular}
+#############################################################
+#
+# Step 9
+#
+# Creating tables to understand how the different categorical variables
+# interconnect
+# Tabular information can be provided in both tables and parallel barplots.
+# The following is an example on two variables, choose two others to get
+# more valuable insights.
+#############################################################
+
+Gender_Education <- table(df$Education, df$Gender)
+Gender_Education # what does this information tells you?
+# How Many rows are there?
+# This is the number of colors you should have in the vector below
+# more intuitive colors can be added here.
+# Keep the order from top to bottom to create your legend vector
+addmargins(Gender_Education) # Add totals to your table
+color <- c("red","blue","yellow","green")
+names <- c("Bachelor's","High School", "Master's","PhD")
+barplot(Gender_Education, col=color, beside= TRUE, main = "Education by Gender", ylim = c(0,250) )
+legend("topright",names,fill=color,cex=0.5) 
+# topright is the position of the legend, it can be moved to top, left bottom, etc...
+# you do not change the rest of the parameters here
+print(addmargins(Gender_Education))
+
+```
+
+## Making Pretty Tables
+```{r}
+library(knitr)
+library(kableExtra)
+
+# Create the contingency table
+Gender_Education <- table(df$Education, df$Gender)
+
+# Add row and column totals
+Gender_Education_margins <- addmargins(Gender_Education)
+
+# Make a clean and beautiful table with kable
+kable(Gender_Education_margins, caption = "Gender by Education Level", align = 'c') %>%
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover", "condensed")) %>%
+  row_spec(0, bold = TRUE, background = "#D3D3D3")  # Highlight header
+
+```
+
+
+## Your Turn
+
+**Essay Question**
+
+Explain the table in details. Focus on the information extracted, anomalies, outliers, relationships.
+
+**Answer**
+The table shows the relationship between Education and Gender, displaying the frequency of each combination. From the totals, it is clear that certain education levels (especially those with higher counts like around the mid-range values) are more common across the dataset.
+
+One noticeable issue is that the categories appear misaligned, as values like 32000, 45000, 60000 are listed under Education, which suggests that income data may have been incorrectly placed in the Education variable. This indicates a data quality issue rather than a true relationship.
+
+There are no clear outliers, but there are uneven distributions, where some categories have very high counts while others have very low or zero counts. Overall, while the table shows frequencies between variables, the main observation is that the relationship may not be reliable due to misclassified variables, and this should be addressed before drawing meaningful conclusions.
